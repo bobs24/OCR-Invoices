@@ -1,0 +1,21 @@
+# .gitignore
+
+# Streamlit secrets file
+.streamlit/secrets.toml
+
+# Python-specific files
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.venv/
+
+# IDE and OS files
+.DS_Store   # macOS
+Thumbs.db   # Windows
+
+# Generated build files
+dist/
+build/
+*.egg-info/

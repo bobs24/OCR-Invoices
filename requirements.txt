@@ -1,0 +1,7 @@
+streamlit
+mistralai
+python-dotenv
+openpyxl
+pdf2image
+pdfplumber
+PyMuPDF
