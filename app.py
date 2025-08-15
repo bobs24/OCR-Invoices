@@ -22,7 +22,7 @@ source_option = st.sidebar.selectbox(
 if source_option == "From Images":
     st.write("Upload one or more images containing tables. Mistral AI will extract and append all tables.")
 elif source_option == "From PDF":
-    st.write("Upload a PDF containing tables. Mistral AI will convert each page to an image (resolution 600) and extract tables.") # Updated resolution in description
+    st.write("Upload a PDF containing tables. Mistral AI will convert each page to an image (resolution 200) and extract tables.") # Updated resolution in description
 
 # --- API Client ---
 try:
@@ -47,7 +47,7 @@ elif source_option == "From PDF":
 
 # --- PDF to Images ---
 # Updated function to remove resizing and use a higher resolution by default
-def pdf_to_images(file_bytes, resolution=1200):
+def pdf_to_images(file_bytes, resolution=200):
     images = []
     with pdfplumber.open(BytesIO(file_bytes)) as pdf:
         for page in pdf.pages:
@@ -135,6 +135,7 @@ if uploaded_files:
         "5. FINAL OUTPUT FORMAT:\n"
         "   - Output only a valid JSON array containing all row objects.\n"
         "   - Do not include any explanations, comments, or extra text — JSON array only.\n"
+        "   - Before output, count rows in the table in the image and ensure the JSON has the same number of objects. If the count is higher, remove duplicates until it matches exactly."
     )
 
     if st.button("Extract Table"):
@@ -148,7 +149,7 @@ if uploaded_files:
                         all_images.append(img)
                 else:  # PDF
                     pdf_bytes = uploaded_files.read()
-                    all_images = pdf_to_images(pdf_bytes, resolution=600)  # Corrected function name and resolution
+                    all_images = pdf_to_images(pdf_bytes, resolution=200)  # Corrected function name and resolution
 
                 # --- Process All Images Concurrently ---
                 all_data = process_images_concurrent(all_images, instruction_prompt, max_workers=8)
@@ -174,3 +175,4 @@ if uploaded_files:
                     st.warning("No data extracted from uploaded files.")
             except Exception as e:
                 st.error(f"An error occurred: {e}")
+
