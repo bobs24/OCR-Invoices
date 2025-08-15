@@ -110,18 +110,39 @@ if uploaded_files:
 
     # --- Instruction Prompt ---
     instruction_prompt = (
-        "Extract all tables from this file and return them as JSON. "
-        "Each object is a row with keys as column names: " + ", ".join(expected_columns) + ". "
-        "Use the header from the first page for all subsequent pages, even if the header is missing. "
-        "For size and quantity: "
-        "  - Only create a row if the quantity for that size is >= 1. "
-        "  - The 'size' in each row must exactly match the column header of the filled cell. "
-        "  - If quantity > 1, create multiple rows for that size with the same non-size data. "
-        "  - Skip all blank or zero cells. "
-        "All other data from the row (product name, ID, etc.) should be copied to each new row. "
-        "Ignore totals, discounts, subtotals, and summary rows. "
-        "If a requested column is missing in the table, use metadata from the first page or above the table. "
-        "Do NOT invent sizes or reorder them. Return valid JSON only, no extra text."
+        "You are a meticulous data extraction and transformation system. "
+        "Your task is to extract all tables from the provided file (PDF, image, spreadsheet, or other formats) "
+        "and transform them into a single JSON array. "
+        "Each JSON object represents exactly one unit from the table. "
+        "Follow these strict rules to ensure accuracy, adaptability, and completeness:\n\n"
+        "0. COLUMN PRIORITY:\n"
+        "   - If the user provides a specific list of expected columns, strictly follow that column order and naming exactly: "
+        f"{expected_columns if expected_columns else '[No columns provided — detect automatically]'}.\n"
+        "   - If no expected columns are provided, automatically detect them from the first table on the first page and use them for all pages.\n\n"
+        "1. COLUMN DETECTION & CONSISTENCY:\n"
+        "   - Classify columns into:\n"
+        "       a) 'Identifier' columns: static product info (e.g., product name, code, color, category).\n"
+        "       b) 'Value' columns: dynamic size/quantity data (e.g., S, M, L, 35, 45).\n"
+        "   - Preserve exact header names—no rewording, no guessing.\n\n"
+        "2. ROW PROCESSING & UNIT CREATION:\n"
+        "   - For each table row, check every 'value' column.\n"
+        "   - For any quantity >= 1, generate that many separate JSON objects (one per unit).\n"
+        "   - Each JSON object must include:\n"
+        "       - All 'identifier' columns with exact values.\n"
+        "       - A 'size' field set to the original column header from which the quantity came.\n"
+        "       - A 'quantity' field set to 1.\n"
+        "   - Do not merge or summarize rows—output every unit as its own object.\n\n"
+        "3. DATA ACCURACY REQUIREMENTS:\n"
+        "   - Ensure every value is correctly aligned with its original header.\n"
+        "   - Preserve exact spelling, punctuation, and capitalization from the source.\n"
+        "   - If an 'identifier' column value is missing, search the surrounding document text (e.g., title above the table) to fill it in.\n\n"
+        "4. FILTERING & EXCLUSIONS:\n"
+        "   - Exclude totals, subtotals, discounts, and any summary rows.\n"
+        "   - Omit rows with all quantities empty or zero.\n"
+        "   - Never invent new sizes or reorder the size columns.\n\n"
+        "5. FINAL OUTPUT FORMAT:\n"
+        "   - Output only a valid JSON array containing all unit objects.\n"
+        "   - Do not include any explanations, comments, or extra text—JSON array only.\n"
     )
 
     if st.button("Extract Table"):
@@ -160,4 +181,5 @@ if uploaded_files:
                 else:
                     st.warning("No data extracted from uploaded files.")
             except Exception as e:
+
                 st.error(f"An error occurred: {e}")
