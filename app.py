@@ -22,7 +22,7 @@ source_option = st.sidebar.selectbox(
 if source_option == "From Images":
     st.write("Upload one or more images containing tables. Mistral AI will extract and append all tables.")
 elif source_option == "From PDF":
-    st.write("Upload a PDF containing tables. Mistral AI will convert each page to an image (resolution 230) and extract tables.")
+    st.write("Upload a PDF containing tables. Mistral AI will convert each page to an image (resolution 600) and extract tables.") # Updated resolution in description
 
 # --- API Client ---
 try:
@@ -46,15 +46,12 @@ elif source_option == "From PDF":
     uploaded_files = st.file_uploader("Choose a PDF file...", type=["pdf"], accept_multiple_files=False)
 
 # --- PDF to Images ---
-def pdf_to_images_resized(file_bytes, resolution=230, max_width=1024):
+# Updated function to remove resizing and use a higher resolution by default
+def pdf_to_images(file_bytes, resolution=1200):
     images = []
     with pdfplumber.open(BytesIO(file_bytes)) as pdf:
         for page in pdf.pages:
             img = page.to_image(resolution=resolution).original
-            if img.width > max_width:
-                ratio = max_width / img.width
-                new_height = int(img.height * ratio)
-                img = img.resize((max_width, new_height))
             images.append(img)
     return images
 
@@ -108,7 +105,6 @@ if uploaded_files:
     )
     expected_columns = [col.strip() for col in expected_columns_input.split(",") if col.strip()]
 
-    # --- Instruction Prompt ---
     instruction_prompt = (
         "You are a meticulous data extraction and transformation system. "
         "Your task is to extract all tables from the provided file (PDF, image, spreadsheet, or other formats) "
@@ -141,7 +137,6 @@ if uploaded_files:
         "   - Do not include any explanations, comments, or extra text — JSON array only.\n"
     )
 
-
     if st.button("Extract Table"):
         with st.spinner("Extracting table data..."):
             try:
@@ -153,7 +148,7 @@ if uploaded_files:
                         all_images.append(img)
                 else:  # PDF
                     pdf_bytes = uploaded_files.read()
-                    all_images = pdf_to_images_resized(pdf_bytes, resolution=230)
+                    all_images = pdf_to_images(pdf_bytes, resolution=600)  # Corrected function name and resolution
 
                 # --- Process All Images Concurrently ---
                 all_data = process_images_concurrent(all_images, instruction_prompt, max_workers=8)
@@ -178,7 +173,4 @@ if uploaded_files:
                 else:
                     st.warning("No data extracted from uploaded files.")
             except Exception as e:
-
                 st.error(f"An error occurred: {e}")
-
-
