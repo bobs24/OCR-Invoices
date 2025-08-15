@@ -129,8 +129,6 @@ if uploaded_files:
         "   - For any quantity >= 1, generate that many separate JSON objects (one per unit).\n"
         "   - Each JSON object must include:\n"
         "       - All 'identifier' columns with exact values.\n"
-        "       - A 'size' field set to the original column header from which the quantity came.\n"
-        "       - A 'quantity' field set to 1.\n"
         "   - Do not merge or summarize rows—output every unit as its own object.\n\n"
         "3. DATA ACCURACY REQUIREMENTS:\n"
         "   - Ensure every value is correctly aligned with its original header.\n"
@@ -183,3 +181,4 @@ if uploaded_files:
             except Exception as e:
 
                 st.error(f"An error occurred: {e}")
+
