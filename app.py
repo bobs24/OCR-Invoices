@@ -113,8 +113,7 @@ if uploaded_files:
         "You are a meticulous data extraction and transformation system. "
         "Your task is to extract all tables from the provided file (PDF, image, spreadsheet, or other formats) "
         "and transform them into a single JSON array. "
-        "Each JSON object represents exactly one unit from the table. "
-        "Follow these strict rules to ensure accuracy, adaptability, and completeness:\n\n"
+        "Each JSON object represents exactly one row from the table in the file — no more, no less.\n\n"
         "0. COLUMN PRIORITY:\n"
         "   - If the user provides a specific list of expected columns, strictly follow that column order and naming exactly: "
         f"{expected_columns if expected_columns else '[No columns provided — detect automatically]'}.\n"
@@ -122,26 +121,26 @@ if uploaded_files:
         "1. COLUMN DETECTION & CONSISTENCY:\n"
         "   - Classify columns into:\n"
         "       a) 'Identifier' columns: static product info (e.g., product name, code, color, category).\n"
-        "       b) 'Value' columns: dynamic size/quantity data (e.g., S, M, L, 35, 45).\n"
+        "       b) 'Value' columns: numeric quantities for specific sizes or attributes (e.g., S, M, L, 35, 45).\n"
         "   - Preserve exact header names—no rewording, no guessing.\n\n"
-        "2. ROW PROCESSING & UNIT CREATION:\n"
-        "   - For each table row, check every 'value' column.\n"
-        "   - For any quantity >= 1, generate that many separate JSON objects (one per unit).\n"
-        "   - Each JSON object must include:\n"
-        "       - All 'identifier' columns with exact values.\n"
-        "   - Do not merge or summarize rows—output every unit as its own object.\n\n"
+        "2. ROW PROCESSING:\n"
+        "   - Output exactly one JSON object for each row in the table.\n"
+        "   - Each JSON object must include all 'identifier' and 'value' columns exactly as they appear.\n"
+        "   - Keep the original quantity as shown in the table — do not change it to 1 and do not multiply rows.\n"
+        "   - Never create extra rows that are not in the source.\n\n"
         "3. DATA ACCURACY REQUIREMENTS:\n"
         "   - Ensure every value is correctly aligned with its original header.\n"
         "   - Preserve exact spelling, punctuation, and capitalization from the source.\n"
-        "   - If an 'identifier' column value is missing, search the surrounding document text (e.g., title above the table) to fill it in.\n\n"
+        "   - If an 'identifier' value is missing, search the surrounding document text (e.g., title above the table) to fill it in.\n\n"
         "4. FILTERING & EXCLUSIONS:\n"
         "   - Exclude totals, subtotals, discounts, and any summary rows.\n"
         "   - Omit rows with all quantities empty or zero.\n"
         "   - Never invent new sizes or reorder the size columns.\n\n"
         "5. FINAL OUTPUT FORMAT:\n"
-        "   - Output only a valid JSON array containing all unit objects.\n"
-        "   - Do not include any explanations, comments, or extra text—JSON array only.\n"
+        "   - Output only a valid JSON array containing all row objects.\n"
+        "   - Do not include any explanations, comments, or extra text — JSON array only.\n"
     )
+
 
     if st.button("Extract Table"):
         with st.spinner("Extracting table data..."):
@@ -181,4 +180,5 @@ if uploaded_files:
             except Exception as e:
 
                 st.error(f"An error occurred: {e}")
+
 
